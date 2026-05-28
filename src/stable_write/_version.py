@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from importlib import metadata
+try:
+    from importlib.metadata import PackageNotFoundError, version
+except ImportError:  # Python < 3.8
+    from importlib_metadata import PackageNotFoundError, version  # type: ignore[no-redef]
 
 
 def get_version() -> str:
     """Return the installed package version, or 'unknown' if not installed."""
     try:
-        return metadata.version("stable-write")
-    except metadata.PackageNotFoundError:
+        return version("stable-write")
+    except PackageNotFoundError:
         return "unknown"

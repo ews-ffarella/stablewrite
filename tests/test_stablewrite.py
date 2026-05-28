@@ -756,11 +756,9 @@ class TestSaveIfChangedCompanions:
         before any temp directory is created — the destination must not exist."""
         dest = tmp_path / "out.txt"
 
-        with (
-            pytest.raises(ValueError, match="companions"),
-            save_if_changed(dest, companions="plot.png") as saver,
-        ):
-            saver.path.write_bytes(b"main")
+        with pytest.raises(ValueError, match="companions"):
+            with save_if_changed(dest, companions="plot.png") as saver:
+                saver.path.write_bytes(b"main")
 
         assert not dest.exists()
 
@@ -769,12 +767,10 @@ class TestSaveIfChangedCompanions:
         dest = tmp_path / "subdir" / "out.txt"
         dest.parent.mkdir()
 
-        with (
-            pytest.raises(ValueError, match="companion"),
-            save_if_changed(dest, companions=["../escape.txt"]) as saver,
-        ):
-            saver.path.write_bytes(b"main")
-            (saver.temp_dir / "escape.txt").write_bytes(b"bad")
+        with pytest.raises(ValueError, match="companion"):
+            with save_if_changed(dest, companions=["../escape.txt"]) as saver:
+                saver.path.write_bytes(b"main")
+                (saver.temp_dir / "escape.txt").write_bytes(b"bad")
 
         assert not (tmp_path / "escape.txt").exists()
 
@@ -783,17 +779,15 @@ class TestSaveIfChangedCompanions:
         dest = tmp_path / "out.txt"
         bad = str(tmp_path / "escape.txt")
 
-        with (
-            pytest.raises(ValueError, match="companion"),
-            save_if_changed(dest, companions=[bad]) as saver,
-        ):
-            saver.path.write_bytes(b"main")
+        with pytest.raises(ValueError, match="companion"):
+            with save_if_changed(dest, companions=[bad]) as saver:
+                saver.path.write_bytes(b"main")
 
     def test_invalid_companions_type_raises(self, tmp_path):
         """A non-iterable companions value raises TypeError before publish."""
         dest = tmp_path / "out.txt"
 
-        with pytest.raises(TypeError):  # noqa: SIM117
+        with pytest.raises(TypeError):
             with save_if_changed(dest, companions=123):  # type: ignore[arg-type]
                 pass
 
@@ -808,11 +802,9 @@ class TestSaveIfChangedCompanions:
 class TestSaveIfChangedProfiles:
     def test_unknown_profile_raises(self, tmp_path):
         dest = tmp_path / "out.txt"
-        with (
-            pytest.raises(ValueError, match="Unknown profile"),
-            save_if_changed(dest, profile="nonexistent") as saver,
-        ):
-            saver.path.write_bytes(b"x")
+        with pytest.raises(ValueError, match="Unknown profile"):
+            with save_if_changed(dest, profile="nonexistent") as saver:
+                saver.path.write_bytes(b"x")
 
     def test_zip_profile_normalizes(self, tmp_path):
         dest1 = tmp_path / "a.zip"
@@ -980,11 +972,9 @@ class TestSaveIfChangedFailurePaths:
         def boom(p: Path) -> None:
             raise RuntimeError("finalizer failed")
 
-        with (
-            pytest.raises(RuntimeError, match="finalizer failed"),
-            save_if_changed(dest, finalizers=[boom]) as saver,
-        ):
-            saver.path.write_bytes(b"new content")
+        with pytest.raises(RuntimeError, match="finalizer failed"):
+            with save_if_changed(dest, finalizers=[boom]) as saver:
+                saver.path.write_bytes(b"new content")
 
         assert dest.read_bytes() == b"original"
 
@@ -1009,12 +999,10 @@ class TestSaveIfChangedFailurePaths:
         def boom(p: Path) -> None:
             raise RuntimeError("finalizer failed")
 
-        with (
-            pytest.raises(RuntimeError),
-            save_if_changed(dest, companions="auto", finalizers=[boom]) as saver,
-        ):
-            saver.path.write_bytes(b"main-v2")
-            (saver.temp_dir / "companion.csv").write_bytes(b"companion-v2")
+        with pytest.raises(RuntimeError):
+            with save_if_changed(dest, companions="auto", finalizers=[boom]) as saver:
+                saver.path.write_bytes(b"main-v2")
+                (saver.temp_dir / "companion.csv").write_bytes(b"companion-v2")
 
         assert dest.read_bytes() == b"main-v1"
         assert (tmp_path / "companion.csv").read_bytes() == b"companion-v1"
@@ -1048,11 +1036,9 @@ class TestSaveIfChangedFailurePaths:
         """ValueError for unknown profile must be raised before any file is published."""
         dest = tmp_path / "out.txt"
 
-        with (
-            pytest.raises(ValueError, match="Unknown profile"),
-            save_if_changed(dest, profile="bogus") as saver,
-        ):
-            saver.path.write_bytes(b"content")
+        with pytest.raises(ValueError, match="Unknown profile"):
+            with save_if_changed(dest, profile="bogus") as saver:
+                saver.path.write_bytes(b"content")
 
         assert not dest.exists()
 
@@ -1061,11 +1047,9 @@ class TestSaveIfChangedFailurePaths:
         dest = tmp_path / "out.txt"
         dest.write_bytes(b"original")
 
-        with (
-            pytest.raises(ValueError, match="Unknown profile"),
-            save_if_changed(dest, profile="bogus") as saver,
-        ):
-            saver.path.write_bytes(b"new content")
+        with pytest.raises(ValueError, match="Unknown profile"):
+            with save_if_changed(dest, profile="bogus") as saver:
+                saver.path.write_bytes(b"new content")
 
         assert dest.read_bytes() == b"original"
 
@@ -1074,11 +1058,9 @@ class TestSaveIfChangedFailurePaths:
     def test_invalid_save_strategy_raises_before_tempdir(self, tmp_path):
         """An unrecognised save_strategy must raise ValueError immediately."""
         dest = tmp_path / "out.txt"
-        with (
-            pytest.raises(ValueError, match="save_strategy"),
-            save_if_changed(dest, save_strategy="bogus") as saver,
-        ):  # type: ignore[arg-type]
-            saver.path.write_bytes(b"content")
+        with pytest.raises(ValueError, match="save_strategy"):  # type: ignore[arg-type]
+            with save_if_changed(dest, save_strategy="bogus") as saver:  # type: ignore[arg-type]
+                saver.path.write_bytes(b"content")
 
     def test_invalid_save_strategy_leaves_destination_unchanged(self, tmp_path):
         """Invalid strategy must not publish anything to an existing destination."""
@@ -1095,12 +1077,10 @@ class TestSaveIfChangedFailurePaths:
         Use companions='auto' for optional companions.
         """
         dest = tmp_path / "out.txt"
-        with (
-            pytest.raises(FileNotFoundError, match=r"ghost.csv"),
-            save_if_changed(dest, companions=["ghost.csv"]) as saver,
-        ):
-            saver.path.write_bytes(b"main")
-            # ghost.csv intentionally not written
+        with pytest.raises(FileNotFoundError, match=r"ghost.csv"):
+            with save_if_changed(dest, companions=["ghost.csv"]) as saver:
+                saver.path.write_bytes(b"main")
+                # ghost.csv intentionally not written
 
         assert not dest.exists()
 
@@ -1230,11 +1210,9 @@ class TestSaveXlsxIfChanged:
         buf = io.BytesIO()
         wb.save(buf)
 
-        with (
-            pytest.raises(FileExistsError),
-            save_xlsx_if_changed(dest, save_strategy="raise") as saver,
-        ):
-            saver.path.write_bytes(buf.getvalue())
+        with pytest.raises(FileExistsError):
+            with save_xlsx_if_changed(dest, save_strategy="raise") as saver:
+                saver.path.write_bytes(buf.getvalue())
 
 
 # ===========================================================================

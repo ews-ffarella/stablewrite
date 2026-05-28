@@ -14,6 +14,7 @@ Built-in profiles registered by default:
 
 from __future__ import annotations
 
+import contextlib
 import re
 import shutil
 import zipfile
@@ -48,27 +49,26 @@ def normalize_zip_metadata(path: Path) -> None:
         tmp_path = Path(tmp.name)
 
     try:
-        with (
-            zipfile.ZipFile(path, "r") as zin,
-            zipfile.ZipFile(tmp_path, "w", compression=zipfile.ZIP_DEFLATED) as zout,
-        ):
-            for old_info in sorted(zin.infolist(), key=lambda x: x.filename):
-                new_info = zipfile.ZipInfo(filename=old_info.filename, date_time=fixed_dt)
-                new_info.compress_type = zipfile.ZIP_DEFLATED
-                new_info.comment = old_info.comment
-                new_info.extra = b""
-                new_info.create_system = old_info.create_system
-                new_info.external_attr = old_info.external_attr
-                new_info.internal_attr = old_info.internal_attr
-                if old_info.filename.endswith("/"):
-                    zout.writestr(new_info, b"")
-                else:
-                    with zin.open(old_info) as src, zout.open(new_info, "w") as dst:
-                        shutil.copyfileobj(src, dst)
+        with zipfile.ZipFile(path, "r") as zin:
+            with zipfile.ZipFile(tmp_path, "w", compression=zipfile.ZIP_DEFLATED) as zout:
+                for old_info in sorted(zin.infolist(), key=lambda x: x.filename):
+                    new_info = zipfile.ZipInfo(filename=old_info.filename, date_time=fixed_dt)
+                    new_info.compress_type = zipfile.ZIP_DEFLATED
+                    new_info.comment = old_info.comment
+                    new_info.extra = b""
+                    new_info.create_system = old_info.create_system
+                    new_info.external_attr = old_info.external_attr
+                    new_info.internal_attr = old_info.internal_attr
+                    if old_info.filename.endswith("/"):
+                        zout.writestr(new_info, b"")
+                    else:
+                        with zin.open(old_info) as src, zout.open(new_info, "w") as dst:
+                            shutil.copyfileobj(src, dst)
 
         shutil.move(tmp_path, path, copy_function=shutil.copyfile)
     finally:
-        tmp_path.unlink(missing_ok=True)
+        with contextlib.suppress(FileNotFoundError):
+            tmp_path.unlink()
 
 
 def strip_office_metadata(path: Path) -> None:
@@ -166,19 +166,18 @@ def strip_ooxml_metadata(path: Path) -> None:
         tmp_path = Path(tmp.name)
 
     try:
-        with (
-            zipfile.ZipFile(path, "r") as zin,
-            zipfile.ZipFile(tmp_path, "w", compression=zipfile.ZIP_DEFLATED) as zout,
-        ):
-            for info in zin.infolist():
-                with zin.open(info) as src:
-                    if info.filename == "docProps/core.xml":
-                        # Small XML — must be read fully to patch in memory.
-                        zout.writestr(info, _neutralize_core_xml(src.read()))
-                    else:
-                        with zout.open(info, "w") as dst:
-                            shutil.copyfileobj(src, dst)
+        with zipfile.ZipFile(path, "r") as zin:
+            with zipfile.ZipFile(tmp_path, "w", compression=zipfile.ZIP_DEFLATED) as zout:
+                for info in zin.infolist():
+                    with zin.open(info) as src:
+                        if info.filename == "docProps/core.xml":
+                            # Small XML — must be read fully to patch in memory.
+                            zout.writestr(info, _neutralize_core_xml(src.read()))
+                        else:
+                            with zout.open(info, "w") as dst:
+                                shutil.copyfileobj(src, dst)
 
         shutil.move(tmp_path, path, copy_function=shutil.copyfile)
     finally:
-        tmp_path.unlink(missing_ok=True)
+        with contextlib.suppress(FileNotFoundError):
+            tmp_path.unlink()

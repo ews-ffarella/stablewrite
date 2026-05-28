@@ -2,7 +2,7 @@ line-length = 100
 indent-width = 4
 respect-gitignore = true
 
-target-version = "py312"
+target-version = "py37"
 
 extend-include = [
     "*.ipynb",
@@ -29,7 +29,9 @@ docstring-code-line-length = "dynamic"
 
 
 [lint]
-ignore = []
+ignore = [
+    "SIM117",  # nested `with` is required when merged form exceeds line-length on py37 target
+]
 # https://learn.scientific-python.org/development/guides/style/#ruff
 select = [
     "EXE", # flake8-executable

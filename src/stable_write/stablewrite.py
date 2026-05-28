@@ -39,12 +39,17 @@ import contextlib
 import hashlib
 import os
 import shutil
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from logging import getLogger
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Literal
+
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal  # type: ignore[assignment]
 
 from stable_write.finalizers import normalize_zip_metadata, strip_ooxml_metadata
 from stable_write.registry import get_profile, register_profile
@@ -208,7 +213,10 @@ def file_hash(path: Path, algo: str = "blake2b", block_size: int = 8192) -> str:
 
     h = hashlib.new(algo)
     with path.open("rb") as f:
-        while chunk := f.read(block_size):
+        while True:
+            chunk = f.read(block_size)
+            if not chunk:
+                break
             h.update(chunk)
     return h.hexdigest()
 
@@ -381,7 +389,7 @@ def save_if_changed(
             _validate_companion_name(_name)
         companions_mode = companions_list
 
-    with TemporaryDirectory(prefix=".stablewrite-", suffix="") as _tmp:
+    with TemporaryDirectory(prefix=".stablewrite-") as _tmp:
         temp_dir = Path(_tmp)
         temp_path = temp_dir / destination.name
         # Pre-create as empty so file_hash always has a readable file, even if
