@@ -1,0 +1,16 @@
+{
+    "explorer.excludeGitIgnore": true,
+    "notebook.formatOnSave.enabled": true,
+    "notebook.codeActionsOnSave": {
+        "source.organizeImports.ruff": "explicit",
+    },
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports.ruff": "explicit",
+        },
+    },
+    "editor.rulers": [
+        100
+    ]
+}

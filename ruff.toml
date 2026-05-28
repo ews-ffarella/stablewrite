@@ -1,0 +1,77 @@
+line-length = 100
+indent-width = 4
+respect-gitignore = true
+
+target-version = "py312"
+
+extend-include = [
+    "*.ipynb",
+    "*.py",
+    "notebooks/*.ipynb",
+    "notebooks/*.py",
+    "scripts/*.py",
+    "tests/*.py",
+]
+extend-exclude = [".venv/"]
+
+[format]
+preview = false
+exclude = ["*.pyi"]
+
+
+line-ending = "lf"
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+
+[lint]
+ignore = []
+# https://learn.scientific-python.org/development/guides/style/#ruff
+select = [
+    "EXE", # flake8-executable
+    "NPY", # NumPy specific rules
+    # "PT",  # flake8-pytest-style
+    "PTH", # flake8-use-pathlib
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "E",
+    "F",
+    "I",   # isort
+    "ICN", # flake8-import-conventions
+    "RUF", # Ruff-specific
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+    "TID", #  flake8-tidy-imports
+    "W",
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+mccabe.max-complexity = 17
+
+future-annotations = true
+
+[lint.per-file-ignores]
+"**/*.ipynb" = [
+    "I002" # Disable required imports for Jupyter notebooks.
+]
+# "**/notebooks/*.py" = ["F401", "E722", "F841", "E501", "E402", "I", "B018"]
+# "**/examples/*.py" = ["F401", "E722", "F841", "E501", "E402", "I", "B018"]
+"**/__init__.py" = ["F401"]
+
+[lint.isort]
+# https://docs.astral.sh/ruff/formatter/#sorting-imports
+combine-as-imports = true
+required-imports = ["from __future__ import annotations"]
+
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all" # Disallow all relative imports.

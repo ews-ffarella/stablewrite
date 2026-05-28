@@ -1,0 +1,31 @@
+# Notebook output stripping rules
+# More specific patterns override earlier patterns
+
+# STRIP outputs from all notebooks by default
+*.ipynb filter=jupyter
+
+# KEEP outputs in documentation notebooks (docs/)
+# This overrides the above pattern for docs/**/*.ipynb
+docs/**/*.ipynb !filter
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.md text
+*.py text
+*.pyx text
+*.c text
+*.sh text
+*.css text
+*.js text
+*.json text
+*.txt text
+*.yaml text
+*.yml text
+*.toml text
+*.config text
+
+# Declare files that will always have CRLF line endings on checkout.
+#*.sln text eol=crlf

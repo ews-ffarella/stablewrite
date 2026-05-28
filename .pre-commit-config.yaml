@@ -1,0 +1,63 @@
+# To use:
+#
+#     prek run -a
+#
+# Or:
+#
+#     prek install  # (runs every time you commit in git)
+#
+# To update this file:
+#
+#     prek autoupdate
+#
+# See https://github.com/pre-commit/pre-commit
+
+ci:
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autofix_commit_msg: "style: pre-commit fixes"
+
+repos:
+# Standard hooks
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: check-added-large-files
+    # Ignore notebooks and pngs and uv.lock
+    exclude: \.(ipynb|png|uv\.lock)$
+  - id: check-case-conflict
+  - id: check-merge-conflict
+  - id: check-symlinks
+  - id: check-yaml
+    exclude: ^conda\.recipe/meta\.yaml$
+  - id: debug-statements
+  - id: end-of-file-fixer
+    # Ignore vtp/vtk/vtu files which often have trailing whitespace in the XML sections
+    exclude: \.vt[kxup]$
+  - id: mixed-line-ending
+  - id: requirements-txt-fixer
+  - id: trailing-whitespace
+
+# Check linting and style issues
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.15.11
+  hooks:
+    - id: ruff
+      args: ["--fix", "--show-fixes"]
+    - id: ruff-format
+      exclude: ^(docs)
+
+# Changes tabs to spaces
+- repo: https://github.com/Lucas-C/pre-commit-hooks
+  rev: v1.5.6
+  hooks:
+  - id: remove-tabs
+    exclude: ^(docs|Makefile|.*\.mk$)
+
+- repo: https://github.com/deshaw/nbstripout-fast
+  rev: v1.1.2
+  hooks:
+  - id: nbstripout-fast
+    name: nbstripout-fast
+    entry: nbstripout-fast
+    types: [jupyter]
+    language: python
