@@ -1,5 +1,8 @@
 # 📝 stablewrite
 
+[![CI](https://github.com/ews-ffarella/stablewrite/actions/workflows/ci.yml/badge.svg)](https://github.com/ews-ffarella/stablewrite/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/stable-write)](https://pypi.org/project/stable-write/)
+
 **Deterministic, atomic, save-only-if-modified file writing for Python data pipelines.**
 
 `stablewrite` is for scripts that generate files repeatedly but should only touch the output when the underlying data actually changed.

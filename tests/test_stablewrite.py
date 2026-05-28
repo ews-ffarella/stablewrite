@@ -255,7 +255,7 @@ class TestStripOfficeMetadata:
                 assert info.date_time == (1980, 1, 1, 0, 0, 0)
 
     @pytest.mark.xfail(
-        reason="openpyxl namespace state leaks between tests, causing non-deterministic serialisation",
+        reason="openpyxl namespace state leaks between tests, causing non-deterministic serialisation",  # noqa: E501
         strict=False,
     )
     def test_deterministic_after_strip(self, tmp_path):
