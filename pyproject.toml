@@ -1,6 +1,6 @@
 [project]
 name = "stable-write"
-version = "0.1.1"
+version = "0.1.2"
 description = "Deterministic, atomic, save-only-if-modified file writing for Python data pipelines."
 readme = "README.md"
 license = { text = "MIT" }
