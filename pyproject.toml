@@ -68,3 +68,11 @@ environments = [
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 100
+
+[[tool.uv.index]]
+name = "stable-write"
+url = "https://pypi.org/simple"
+# explicit = true
+
+[tool.uv.sources]
+stable-write = { index = "stable-write" }

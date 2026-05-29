@@ -169,7 +169,7 @@ save_if_changed(
 | Argument        | Purpose                                                                                    |
 | --------------- | ------------------------------------------------------------------------------------------ |
 | `path`          | Final destination path.                                                                    |
-| `profile`       | Named profile: `"zip"`, `"xlsx"`, `"docx"`, `"pptx"`, or any registered custom profile.   |
+| `profile`       | Named profile: `"zip"`, `"xlsx"`, `"docx"`, `"pptx"`, or any registered custom profile.    |
 | `finalizers`    | Ordered list of custom `(Path) -> None` functions run before hashing. Overrides `profile`. |
 | `save_strategy` | What to do when content changed: `"overwrite"`, `"raise"`, or `"skip"`.                    |
 | `algo`          | Hash algorithm used for byte comparison. Defaults to `"blake2b"`.                          |
@@ -181,11 +181,11 @@ save_if_changed(
 
 Profiles are stored in a global registry. The following functions manage it:
 
-| Function                                           | Purpose                                                         |
-| -------------------------------------------------- | --------------------------------------------------------------- |
-| `register_profile(name, finalizers, is_equal, force)` | Register a named profile for use with `profile=`.            |
-| `get_profile(name) → Profile`                      | Retrieve a registered profile; raises `ValueError` if absent.  |
-| `list_profiles() → list[str]`                      | Return a sorted list of all registered profile names.           |
+| Function                                              | Purpose                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------- |
+| `register_profile(name, finalizers, is_equal, force)` | Register a named profile for use with `profile=`.             |
+| `get_profile(name) → Profile`                         | Retrieve a registered profile; raises `ValueError` if absent. |
+| `list_profiles() → list[str]`                         | Return a sorted list of all registered profile names.         |
 
 All three are importable directly from `stable_write`.
 
