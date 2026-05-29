@@ -33,18 +33,16 @@ Typical usage::
         print("report updated")
 """
 
-from __future__ import annotations
-
 import contextlib
 import hashlib
 import os
 import shutil
 import sys
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from logging import getLogger
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
+from typing import Callable, Dict, Iterator, List, Optional, Union
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -62,7 +60,7 @@ logger = getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def _publish_file(src: Path, dst: Path, *, copy_fn: Callable[[str, str], str]) -> None:
+def _publish_file(src: Path, dst: Path, *, copy_fn: Callable[[str, str], None]) -> None:
     """Copy *src* to a destination-side temp file then ``os.replace`` onto *dst*.
 
     This ensures the final replacement is always an ``os.replace`` within the
@@ -114,13 +112,13 @@ class SaveResult:
     """
 
     destination: Path
-    changed: bool | None = None
-    saved: bool | None = None
-    old_hash: str | None = None
-    new_hash: str | None = None
+    changed: Optional[bool] = None
+    saved: Optional[bool] = None
+    old_hash: Optional[str] = None
+    new_hash: Optional[str] = None
     hash_algo: str = "blake2b"
     reason: str = ""
-    changed_companions: list[str] = field(default_factory=list)
+    changed_companions: List[str] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -150,19 +148,19 @@ class Saver:
     # Convenience pass-throughs so callers can do ``saver.changed`` directly.
 
     @property
-    def changed(self) -> bool | None:
+    def changed(self) -> Optional[bool]:
         return self.result.changed
 
     @property
-    def saved(self) -> bool | None:
+    def saved(self) -> Optional[bool]:
         return self.result.saved
 
     @property
-    def old_hash(self) -> str | None:
+    def old_hash(self) -> Optional[str]:
         return self.result.old_hash
 
     @property
-    def new_hash(self) -> str | None:
+    def new_hash(self) -> Optional[str]:
         return self.result.new_hash
 
     @property
@@ -174,7 +172,7 @@ class Saver:
         return self.result.reason
 
     @property
-    def changed_companions(self) -> list[str]:
+    def changed_companions(self) -> List[str]:
         return self.result.changed_companions
 
     def __repr__(self) -> str:
@@ -225,7 +223,7 @@ def file_hash(path: Path, algo: str = "blake2b", block_size: int = 8192) -> str:
 # Built-in profile registration
 # ---------------------------------------------------------------------------
 
-_BUILTIN_PROFILES: dict[str, list[Callable[[Path], None]]] = {
+_BUILTIN_PROFILES: Dict[str, List[Callable[[Path], None]]] = {
     "zip": [normalize_zip_metadata],
     # xlsx/docx/pptx: patch docProps/core.xml in the ZIP (no openpyxl round-trip)
     # then normalise all ZIP entry metadata for a fully deterministic byte output.
@@ -273,17 +271,17 @@ def _validate_companion_name(name: str) -> None:
 
 @contextlib.contextmanager
 def save_if_changed(
-    path: str | Path,
+    path: Union[str, Path],
     *,
-    profile: str | None = None,
-    finalizers: list[Callable[[Path], None]] | None = None,
+    profile: Optional[str] = None,
+    finalizers: Optional[List[Callable[[Path], None]]] = None,
     save_strategy: Literal["overwrite", "skip", "raise"] = "overwrite",
     algo: str = "blake2b",
     block_size: int = 8192,
     safe_copy: bool = False,
-    companions: list[str] | None | str = "auto",
-    is_equal: Callable[[Path, Path], bool] | None = None,
-):
+    companions: Union[List[str], None, str] = "auto",
+    is_equal: Optional[Callable[[Path, Path], bool]] = None,
+) -> Iterator["Saver"]:
     """Context manager for deterministic, atomic, save-only-if-modified file writing.
 
     Yields a :class:`Saver` object.  Write your output to ``saver.path``.  On
@@ -369,7 +367,7 @@ def save_if_changed(
 
     # Companion resolution
     if companions is None or companions == []:
-        companions_mode: str | list[str] = []
+        companions_mode: Union[str, List[str]] = []
     elif companions == "auto":
         companions_mode = "auto"
     elif isinstance(companions, str):
@@ -521,7 +519,7 @@ def save_if_changed(
 
 
 @contextlib.contextmanager
-def save_xlsx_if_changed(path: str | Path, **kwargs):
+def save_xlsx_if_changed(path: Union[str, Path], **kwargs) -> Iterator["Saver"]:
     """Convenience wrapper for Excel files with deterministic normalization.
 
     Equivalent to ``save_if_changed(path, profile="xlsx", **kwargs)``.

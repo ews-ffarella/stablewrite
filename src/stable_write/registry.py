@@ -1,22 +1,22 @@
-from __future__ import annotations
-
-from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable, Dict, List, Optional, Sequence
 
 
 @dataclass
 class Profile:
     finalizers: Sequence[Callable[[Path], None]] = ()
-    is_equal: Callable[[Path, Path], bool] | None = None
+    is_equal: Optional[Callable[[Path, Path], bool]] = None
+
 
 # Internal global registry
-_REGISTRY: dict[str, Profile] = {}
+_REGISTRY: Dict[str, Profile] = {}
+
 
 def register_profile(
     name: str,
     finalizers: Sequence[Callable[[Path], None]] = (),
-    is_equal: Callable[[Path, Path], bool] | None = None,
+    is_equal: Optional[Callable[[Path, Path], bool]] = None,
     force: bool = False,
 ) -> None:
     """Register a named profile.
@@ -49,6 +49,6 @@ def get_profile(name: str) -> Profile:
         raise ValueError(f"Unknown profile '{name}'. Available: {sorted(_REGISTRY)}") from None
 
 
-def list_profiles() -> list[str]:
+def list_profiles() -> List[str]:
     """Return a sorted list of all registered profile names."""
     return sorted(_REGISTRY)

@@ -52,12 +52,3 @@ repos:
   hooks:
   - id: remove-tabs
     exclude: ^(docs|Makefile|.*\.mk$)
-
-- repo: https://github.com/deshaw/nbstripout-fast
-  rev: v1.1.2
-  hooks:
-  - id: nbstripout-fast
-    name: nbstripout-fast
-    entry: nbstripout-fast
-    types: [jupyter]
-    language: python

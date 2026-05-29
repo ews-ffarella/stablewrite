@@ -56,20 +56,15 @@ unfixable = []
 
 mccabe.max-complexity = 17
 
-future-annotations = true
+future-annotations = false
 
 [lint.per-file-ignores]
-"**/*.ipynb" = [
-    "I002" # Disable required imports for Jupyter notebooks.
-]
-# "**/notebooks/*.py" = ["F401", "E722", "F841", "E501", "E402", "I", "B018"]
-# "**/examples/*.py" = ["F401", "E722", "F841", "E501", "E402", "I", "B018"]
 "**/__init__.py" = ["F401"]
 
 [lint.isort]
 # https://docs.astral.sh/ruff/formatter/#sorting-imports
 combine-as-imports = true
-required-imports = ["from __future__ import annotations"]
+# required-imports = ["from __future__ import annotations"]
 
 
 [lint.pydocstyle]

@@ -12,8 +12,6 @@ Built-in profiles registered by default:
 * ``"pptx"`` — :func:`strip_ooxml_metadata`, :func:`normalize_zip_metadata`
 """
 
-from __future__ import annotations
-
 import contextlib
 import re
 import shutil

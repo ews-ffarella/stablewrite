@@ -11,12 +11,11 @@ Covers the full public surface of the module:
   - SaveResult / Saver dataclasses
 """
 
-from __future__ import annotations
-
 import importlib.util
 import time
 import zipfile
 from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import pytest
 
@@ -47,7 +46,7 @@ _requires_pandas = pytest.mark.skipif(
 # ---------------------------------------------------------------------------
 
 
-def _make_zip(path: Path, entries: dict[str, bytes] | None = None) -> None:
+def _make_zip(path: Path, entries: Optional[Dict[str, bytes]] = None) -> None:
     """Write a minimal ZIP at *path* with the given *entries*."""
     if entries is None:
         entries = {"xl/workbook.xml": b"<workbook/>", "_rels/.rels": b"<Relationships/>"}
@@ -61,7 +60,7 @@ def _write(
     dest: Path,
     *,
     save_strategy: str = "overwrite",
-    companions: dict[str, bytes] | str = "auto",
+    companions: Union[Dict[str, bytes], str] = "auto",
     finalizers=None,
     profile=None,
     safe_copy: bool = False,
@@ -645,7 +644,7 @@ class TestSaveIfChangedFinalizers:
 
     def test_multiple_finalizers_run_in_order(self, tmp_path):
         dest = tmp_path / "out.txt"
-        log: list[str] = []
+        log: List[str] = []
 
         def first(p: Path) -> None:
             log.append("first")
@@ -1234,7 +1233,7 @@ class TestSaveXlsxIfChangedPandas:
     strip + normalize finalizer chain against a real-world caller.
     """
 
-    def _make_df(self, values: list[int]):
+    def _make_df(self, values: List[int]):
         import pandas as pd
 
         return pd.DataFrame({"a": values, "b": [v * 10 for v in values]})
@@ -1356,7 +1355,7 @@ class TestSaveXlsxIfChangedPandas:
 def zip_is_equal(new: Path, existing: Path) -> bool:
     import hashlib
 
-    def entries(path: Path) -> dict[str, bytes]:
+    def entries(path: Path) -> Dict[str, bytes]:
         with zipfile.ZipFile(path, "r") as zf:
             result = {}
             for info in zf.infolist():

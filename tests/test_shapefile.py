@@ -15,7 +15,7 @@ These tests verify:
     full re-save even though the main .shp bytes are identical
 """
 
-from __future__ import annotations
+from typing import List, Optional
 
 import pytest
 
@@ -36,7 +36,7 @@ from stable_write import save_if_changed  # noqa: E402
 _SHAPEFILE_EXTS = {".shp", ".dbf", ".shx", ".prj", ".cpg"}
 
 
-def _make_gdf(values: list, points: list[tuple] | None = None) -> gpd.GeoDataFrame:
+def _make_gdf(values: list, points: Optional[List[tuple]] = None) -> gpd.GeoDataFrame:
     if points is None:
         points = [(float(i), float(i)) for i in range(len(values))]
     return gpd.GeoDataFrame(
@@ -197,6 +197,9 @@ def _write_gpkg(
     """Save *gdf* to ``tmp_path/data.gpkg`` via save_if_changed (no is_equal)."""
     dest = tmp_path / "data.gpkg"
     with save_if_changed(dest, save_strategy=save_strategy) as saver:
+        # fiona/GPKG driver refuses to write to a pre-existing file; remove the
+        # empty placeholder that stablewrite creates before handing the path over.
+        saver.path.unlink()
         gdf.to_file(saver.path, driver="GPKG")
     return saver
 
@@ -269,11 +272,13 @@ class TestGeopackageDeterminism:
 
         dest1 = tmp_path / "a.gpkg"
         with save_if_changed(dest1) as saver:
+            saver.path.unlink()
             gdf.to_file(saver.path, driver="GPKG")
         h1 = file_hash(dest1)
 
         dest2 = tmp_path / "a.gpkg"
         with save_if_changed(dest2) as saver:
+            saver.path.unlink()
             gdf.to_file(saver.path, driver="GPKG")
         h2 = file_hash(dest2)
 
@@ -317,6 +322,7 @@ def _write_gpkg_compared(
 ):
     dest = tmp_path / "data.gpkg"
     with save_if_changed(dest, is_equal=_gpkg_is_equal, save_strategy=save_strategy) as saver:
+        saver.path.unlink()
         gdf.to_file(saver.path, driver="GPKG")
     return saver
 
